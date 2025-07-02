@@ -33,8 +33,8 @@ function RouteComponent() {
           <Link to="/login" className="font-semibold text-blue-700">
             Login
           </Link>{' '}
+          instead
         </p>
-        instead
       </div>
     </div>
   );
