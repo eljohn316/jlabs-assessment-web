@@ -1,6 +1,6 @@
 import { createRouter } from '@tanstack/react-router';
 import { routeTree } from '@/routeTree.gen';
 
-const router = createRouter({ routeTree });
+const router = createRouter({ routeTree, notFoundMode: 'root' });
 
 export { router };
