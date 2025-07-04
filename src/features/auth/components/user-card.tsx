@@ -19,7 +19,7 @@ export function UserCard({ user }: UserCardProps) {
           <p className="text-gray-600">
             joined on{' '}
             <span className="font-medium">
-              {user.dateJoined.toDateString()}
+              {new Date(user.dateJoined).toDateString()}
             </span>
           </p>
         </div>

@@ -1,8 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from '@tanstack/react-router';
-import { registerSchema } from '@/features/auth/schema/register-schema';
+import { Link, useNavigate } from '@tanstack/react-router';
 import {
   Form,
   FormControl,
@@ -13,11 +12,15 @@ import {
 } from '@/components/form';
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
+import { registerSchema } from '@/features/auth/schema/register-schema';
+import { useAuth } from '@/features/auth/components/auth-provider';
 
-type RegisterSchema = z.infer<typeof registerSchema>;
+export type RegisterPayload = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
-  const form = useForm<RegisterSchema>({
+  const navigate = useNavigate();
+  const auth = useAuth();
+  const form = useForm<RegisterPayload>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       name: '',
@@ -26,8 +29,13 @@ export function RegisterForm() {
     },
   });
 
-  function onSubmit(values: RegisterSchema) {
-    console.log(values);
+  async function onSubmit(values: RegisterPayload) {
+    try {
+      await auth.register(values);
+      navigate({ to: '/register' });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (

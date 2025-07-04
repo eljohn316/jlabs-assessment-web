@@ -3,5 +3,5 @@ export type User = {
   image: string;
   name: string;
   email: string;
-  dateJoined: Date;
+  dateJoined: string;
 };

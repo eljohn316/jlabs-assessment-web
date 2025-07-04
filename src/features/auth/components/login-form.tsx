@@ -1,8 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link } from '@tanstack/react-router';
-import { loginSchema } from '@/features/auth/schema/login-schema';
+import { Link, useNavigate } from '@tanstack/react-router';
 import {
   Form,
   FormControl,
@@ -13,11 +12,15 @@ import {
 } from '@/components/form';
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
+import { loginSchema } from '@/features/auth/schema/login-schema';
+import { useAuth } from '@/features/auth/components/auth-provider';
 
-type LoginSchema = z.infer<typeof loginSchema>;
+export type LoginPayload = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
-  const form = useForm<LoginSchema>({
+  const navigate = useNavigate();
+  const auth = useAuth();
+  const form = useForm<LoginPayload>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
@@ -25,8 +28,13 @@ export function LoginForm() {
     },
   });
 
-  function onSubmit(values: LoginSchema) {
-    console.log(values);
+  async function onSubmit(values: LoginPayload) {
+    try {
+      await auth.login(values);
+      navigate({ to: '/' });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
