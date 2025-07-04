@@ -12,6 +12,7 @@ import type { RegisterPayload } from '@/features/auth/components/register-form';
 
 export type AuthContext = {
   user: User | null | undefined;
+  error: string | undefined;
   isAuthenticated: boolean;
   setUser: React.Dispatch<React.SetStateAction<User | null | undefined>>;
   login: (payload: LoginPayload) => Promise<void>;
@@ -22,6 +23,7 @@ export type AuthContext = {
 const AuthContext = React.createContext<AuthContext | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [error, setError] = React.useState<string>();
   const [user, setUser] = React.useState<User | null>();
   const isAuthenticated = !!user;
 
@@ -54,10 +56,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const { user } = await authApi.getCurrentUser();
       setUser(user);
-    } catch (error) {
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
       if (`${(error as AxiosError).status}`.startsWith('4')) {
         removeAuthToken();
+        setError(error.response!.data.message);
       }
+
       setUser(null);
     }
   }
@@ -68,7 +73,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated, setUser, login, register, logout }}>
+      value={{
+        user,
+        error,
+        isAuthenticated,
+        setUser,
+        login,
+        register,
+        logout,
+      }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { AxiosError } from 'axios';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,12 +14,14 @@ import {
 } from '@/components/form';
 import { Input } from '@/components/input';
 import { Button } from '@/components/button';
+import { CircleXIcon } from '@/components/icons';
 import { registerSchema } from '@/features/auth/schema/register-schema';
 import { useAuth } from '@/features/auth/components/auth-provider';
 
 export type RegisterPayload = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
+  const [error, setError] = useState<string>();
   const navigate = useNavigate();
   const auth = useAuth();
   const form = useForm<RegisterPayload>({
@@ -29,12 +33,25 @@ export function RegisterForm() {
     },
   });
 
+  function handleError(err: unknown) {
+    const error = err as AxiosError<{ data: Record<string, string[]> }>;
+    if (error.status === 400) {
+      for (const [path, message] of Object.entries(error.response!.data.data)) {
+        form.setError(path as 'name' | 'email' | 'password', {
+          message: message.at(0),
+        });
+      }
+      return;
+    }
+    setError('Something went wrong');
+  }
+
   async function onSubmit(values: RegisterPayload) {
     try {
       await auth.register(values);
       navigate({ to: '/register' });
     } catch (error) {
-      console.log(error);
+      handleError(error);
     }
   }
 
@@ -46,6 +63,12 @@ export function RegisterForm() {
         <h3 className="text-center text-2xl font-bold text-gray-900">
           Register
         </h3>
+        {error && (
+          <div className="flex items-center gap-x-2.5 rounded-md bg-red-100 p-4 text-sm text-red-800">
+            <CircleXIcon />
+            {error}
+          </div>
+        )}
         <div className="space-y-6">
           <FormField
             control={form.control}
